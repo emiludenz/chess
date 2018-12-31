@@ -20,9 +20,9 @@ type rook ( col : Color ) =
   // A list of functions for relative moves
   let indToRel = [
     fun elm -> ( elm ,0) ; // South by elm
-    fun elm -> ( - elm ,0) ; // North by elm
+    fun elm -> ( -elm ,0) ; // North by elm
     fun elm -> (0 , elm ) ; // West by elm
-    fun elm -> (0 , - elm ) // East by elm
+    fun elm -> (0 , -elm ) // East by elm
     ]
   // For each function in indToRel , we calculate List . map f [1..7].
   // swap converts ( List . map fct indices ) to ( List . map indices  fct ) .
