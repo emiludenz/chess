@@ -1,14 +1,13 @@
 module Pieces
 open Chess
-// / A king is a chessPiece which moves 1 square in any
-direction
+// / A king is a chessPiece which moves 1 square in any direction
 type king ( col : Color ) =
   inherit chessPiece ( col )
-  override this.nameOfType = " king "
+  override this.nameOfType = "king"
   // king has runs of 1 in 8 directions : (N , NE , E , SE , S , SW ,  W , NW )
   override this.candidateRelativeMoves =
-    [[( -1 ,0) ];[( -1 ,1) ];[(0 ,1) ];[(1 ,1) ];
-    [(1 ,0) ];[(1 , -1) ];[(0 , -1) ];[( -1 , -1) ]]
+    [[(-1,0)];[(-1,1)];[(0,1)];[(1,1)];
+    [(1,0)];[(1,-1)];[(0,-1)];[(-1,-1)]]
   // / A rook is a chessPiece which moves horizontally and vertically
 type rook ( col : Color ) =
   inherit chessPiece ( col )
@@ -29,5 +28,5 @@ type rook ( col : Color ) =
   // swap converts ( List . map fct indices ) to ( List . map indices  fct ) .
   let swap f a b = f b a
   override this.candidateRelativeMoves = 
-    List.map ( swap List.map [1..7]) indToRel
-  override this.nameOfType = " rook "
+    List.map (swap List.map [1..7]) indToRel
+  override this.nameOfType = "rook"
