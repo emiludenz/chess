@@ -21,32 +21,32 @@ type chessPiece ( color : Color ) =
   abstract member candiateRelativeMoves : Position list list
   /// Available moves and neighbours ([(1 ,0);(2 ,0);...],[p1;p2])
   member this.availableMoves (board:Board) : (Position list * chessPiece list) =
-    board.getVacantNNeighbours this
+    board.getVacantNNeighbours this // First part of the assignment
 /// A board
 and Board () =
   let _array = Collections.Array2D.create<chessPiece option> 8 8 None
   /// Wrap a position as option type
   let validPositionWrap ( pos : Position ) : Position option =
-    let ( rank , file ) = pos // square coordinate
+    let (rank, file) = pos // square coordinate
     if rank < 0 || rank > 7 || file < 0 || file > 7 then None
-    else Some ( rank , file )
+    else Some (rank, file)
     /// Convert relative coordinates to absolute and remove
     /// out - of - board coordinates .
-  let relativeToAbsolute ( pos : Position ) ( lst : Position list ) : Position list =
+  let relativeToAbsolute (pos:Position) (lst:Position list) : Position list =
     let addPair (a:int,b:int) (c:int,d:int) : Position = (a+c, b+d)
     // Add origin and delta positions and Choose absolute positions that are on the board
     List.map (addPair pos) lst |> List.choose validPositionWrap
   /// Board is indexed using.[ ,] notation
   member this.Item
-    with get ( a : int , b : int ) = _array.[ a , b ]
-    and set ( a : int , b : int ) ( p : chessPiece option ) =
-      if p.IsSome then p.Value.position <- Some (a , b )
+    with get (a:int, b:int) = _array.[a, b]
+    and set (a:int, b:int) (p:chessPiece option) =
+      if p.IsSome then p.Value.position <- Some (a, b)
       _array.[a, b] <- p
   /// Produce string of board for, e.g., the printfn function.
   override this.ToString () =
     let rec boardStr (i:int) (j:int) : string =
-      match (i , j) with
-        (8 ,0) -> " "
+      match (i,j) with
+        (8,0) -> " "
         | _ ->
           let stripOption (p:chessPiece option) : string =
             match p with
@@ -56,14 +56,14 @@ and Board () =
           let pieceStr = stripOption _array.[7-i, j]
           // let pieceStr = sprintf "(%d , %d)" i j
           let lineSep = " " + String.replicate (8*4-1) " -"
-          match (i , j ) with
-          (0 ,0) ->
+          match (i,j) with
+          (0,0) ->
             let str = sprintf "%s\n|%1s" lineSep pieceStr
             str + boardStr 0 1
-          | (i ,7) ->
+          | (i,7) ->
             let str = sprintf "|%1s|\n%s\n" pieceStr lineSep
             str + boardStr ( i+1) 0
-          | (i , j ) ->
+          | (i,j) ->
             let str = sprintf "|%1s" pieceStr
             str + boardStr i (j+1)
     boardStr 0 0
@@ -75,7 +75,7 @@ and Board () =
   member this.getVacantNOccupied (run:Position list) : (Position list * (chessPiece option)) =
     try
       // Find index of first non-vacant square of a run
-      let idx = List.findIndex ( fun (i , j ) -> this.[ i , j ].IsSome ) run
+      let idx = List.findIndex (fun(i,j) -> this.[i,j].IsSome) run
       let (i,j) = run.[idx]
       let piece = this.[i,j] // The first non-vacant neighbour
       if idx = 0

@@ -1,16 +1,16 @@
 module Pieces
 open Chess
 /// A king is a chessPiece which moves 1 square in any direction
-type king ( col : Color ) =
-  inherit chessPiece ( col )
+type king (col:Color) =
+  inherit chessPiece (col)
   override this.nameOfType = "king"
   // king has runs of 1 in 8 directions : (N , NE , E , SE , S , SW ,  W , NW )
   override this.candidateRelativeMoves =
     [[(-1,0)];[(-1,1)];[(0,1)];[(1,1)];
     [(1,0)];[(1,-1)];[(0,-1)];[(-1,-1)]]
   /// A rook is a chessPiece which moves horizontally and vertically
-type rook ( col : Color ) =
-  inherit chessPiece ( col )
+type rook (col:Color) =
+  inherit chessPiece (col)
   // A rook can move horizontally and vertically
   // Make a list of relative coordinate lists. We consider the
   // current position and try all combinations of relative moves
@@ -18,10 +18,10 @@ type rook ( col : Color ) =
   // Some will be out of board, but will be assumed removed as illegal moves.
   // A list of functions for relative moves
   let indToRel = [
-    fun elm -> ( elm ,0) ;  // South by elm
-    fun elm -> ( -elm ,0) ; // North by elm
-    fun elm -> (0 , elm) ; // West by elm
-    fun elm -> (0 , -elm)  // East by elm
+    fun elm -> (elm, 0) ;  // South by elm
+    fun elm -> (-elm, 0) ; // North by elm
+    fun elm -> (0, elm) ; // West by elm
+    fun elm -> (0, -elm)  // East by elm
     ]
   // For each function in indToRel, we calculate List.map f [1..7].
   // swap converts ( List.map fct indices ) to ( List.map indices  fct ).
