@@ -1,6 +1,6 @@
 open Chess
 open Pieces
-// / Print various information about a piece
+/// Print various information about a piece
 let printPiece ( board : Board ) ( p : chessPiece ) : unit =
   printfn "%A : %A %A" p p.position ( p.availableMoves board )
 // Create a game

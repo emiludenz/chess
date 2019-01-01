@@ -48,7 +48,7 @@ and Board () =
     let rec boardStr ( i : int ) ( j : int ) : string =
       match (i , j ) with
         (8 ,0) -> " "
-        | _ -> 
+        | _ ->
           let stripOption ( p : chessPiece option ) : string =
             match p with
               None -> " "
@@ -68,11 +68,11 @@ and Board () =
             let str = sprintf " | %1s " pieceStr
             str + boardStr i (j+1)
     boardStr 0 0
-    // / Move piece by specifying source and target coordinates
+    /// Move piece by specifying source and target coordinates
   member this.move ( source : Position ) ( target : Position ) : unit =
     this.[ fst target , snd target ] <- this.[fst source, snd source]
     this.[fst source , snd source ] <- None
-  // / Find the tuple of empty squares and first neighbour if any .
+  /// Find the tuple of empty squares and first neighbour if any .
   member this.getVacantNOccupied ( run : Position list ) : ( Position list * ( chessPiece option ) ) =
     try
       // Find index of first non - vacant square of a run
@@ -85,10 +85,10 @@ and Board () =
     with
       _ -> ( run , None ) // outside the board
   /// find the list of all empty squares and list of neighbours
-  member this.getVacantNNeighbours ( piece : chessPiece ) : ( Position list * chessPiece list ) =  
+  member this.getVacantNNeighbours ( piece : chessPiece ) : ( Position list * chessPiece list ) =
     match piece.position with
       None -> ([] ,[])
-      | Some p -> 
+      | Some p ->
         let convertNWrap =
           (relativeToAbsolute p) >> this.getVacantNOccupied
         let vacantPieceLists = List.map convertNWrap piece.candiateRelativeMoves
