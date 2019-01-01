@@ -12,19 +12,19 @@ type king ( col : Color ) =
 type rook ( col : Color ) =
   inherit chessPiece ( col )
   // A rook can move horizontally and vertically
-  // Make a list of relative coordinate lists . We consider the
+  // Make a list of relative coordinate lists. We consider the
   // current position and try all combinations of relative moves
-  // (1 ,0) ; (2 ,0) ... (7 ,0) ; ( -1 ,0) ; ( -2 ,0) ; ...; (0 , -7) .
-  // Some will be out of board , but will be assumed removed as illegal moves .
+  // (1 ,0) ; (2 ,0) ... (7 ,0) ; ( -1 ,0) ; ( -2 ,0) ; ...; (0 , -7).
+  // Some will be out of board, but will be assumed removed as illegal moves.
   // A list of functions for relative moves
   let indToRel = [
-    fun elm -> ( elm ,0) ; // South by elm
+    fun elm -> ( elm ,0) ;  // South by elm
     fun elm -> ( -elm ,0) ; // North by elm
-    fun elm -> (0 , elm ) ; // West by elm
-    fun elm -> (0 , -elm ) // East by elm
+    fun elm -> (0 , elm) ; // West by elm
+    fun elm -> (0 , -elm)  // East by elm
     ]
-  // For each function in indToRel , we calculate List . map f [1..7].
-  // swap converts ( List . map fct indices ) to ( List . map indices  fct ) .
+  // For each function in indToRel, we calculate List.map f [1..7].
+  // swap converts ( List.map fct indices ) to ( List.map indices  fct ).
   let swap f a b = f b a
   override this.candidateRelativeMoves =
     List.map (swap List.map [1..7]) indToRel
