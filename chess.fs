@@ -21,29 +21,34 @@ type chessPiece ( color : Color ) =
   /// at hand.
   abstract member candidateRelativeMoves : Position list list
   /// Available moves and neighbours ([(1 ,0);(2 ,0);...],[p1;p2])
- 
   member this.availableMoves (board:Board) : (Position list * chessPiece list) =
+    let moves = board.getVacantNNeighbours this   // First part of the assignment
     if this.nameOfType.ToLower() = "king" then
-      let moves = board.getVacantNNeighbours this   // First part of the assignment
       let mutable notSafeMoves = []
       for i in 0..7 do
         for j in 0..7 do
           let mutable (p:chessPiece option) = board.Item(i,j)
           if p.IsSome && this.color <> p.Value.color then
             if p.Value.nameOfType.ToLower() = "rook" then
-              notSafeMoves <- List.append notSafeMoves [for i in 0..7 -> (fst p.Value.position.Value, i)]
-              notSafeMoves <- List.append notSafeMoves [for i in 0..7 -> (i, snd p.Value.position.Value)]
+              notSafeMoves <- 
+                List.append notSafeMoves [for i in 0..7 -> (fst p.Value.position.Value, i)]
+              notSafeMoves <- 
+                List.append notSafeMoves [for i in 0..7 -> (i, snd p.Value.position.Value)]
+      
             elif p.Value.nameOfType.ToLower() = "king" then
               for i in -1..1 do 
                 for j in -1..1 do
-                  notSafeMoves <- List.append notSafeMoves [((fst p.Value.position.Value)+i, (snd p.Value.position.Value)+j)]       
+                  notSafeMoves <- 
+                    List.append notSafeMoves [((fst p.Value.position.Value)+i, 
+                                               (snd p.Value.position.Value)+j)]       
+      
       if (notSafeMoves.IsEmpty) then 
         board.getVacantNNeighbours this
+      
       else 
         let safeMoves = fst moves |> List.filter (fun x -> not(List.contains x notSafeMoves))
-        (safeMoves,(snd moves))
-    
-    else board.getVacantNNeighbours this
+        (safeMoves,(snd moves)) 
+    else moves
 
 /// A board
 and Board () =
@@ -85,7 +90,7 @@ and Board () =
             let str = sprintf "%s\n| %1s " lineSep pieceStr
             str + boardStr 0 1
           | (i,7) -> 
-            let str = sprintf "| %1s |\n%s\n" pieceStr lineSep
+            let str = sprintf "| %1s |%d\n%s\n" pieceStr (abs(i-7)) lineSep // just to make it easy to debug (abs(i-7))
             str + boardStr (i+1) 0 
           | (i,j) -> 
             let str = sprintf "| %1s " pieceStr
