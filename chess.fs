@@ -23,7 +23,22 @@ type chessPiece ( color : Color ) =
   /// Available moves and neighbours ([(1 ,0);(2 ,0);...],[p1;p2])
  
   member this.availableMoves (board:Board) : (Position list * chessPiece list) =
-    board.getVacantNNeighbours this // First part of the assignment
+    if this.nameOfType.ToLower() = "king" then
+      let moves = board.getVacantNNeighbours this   // First part of the assignment
+      let mutable notSafeMoves = []
+      for i in 0..7 do
+        for j in 0..7 do
+          let mutable (p:chessPiece option) = board.Item(i,j)
+          if p.IsSome && this.color <> p.Value.color then
+            if p.Value.nameOfType.ToLower() = "rook" then
+              notSafeMoves <- List.append notSafeMoves [for i in 0..7 -> (fst p.Value.position.Value, i)]
+              notSafeMoves <- List.append notSafeMoves [for i in 0..7 -> (i, snd p.Value.position.Value)]
+      if (notSafeMoves.IsEmpty) then board.getVacantNNeighbours this
+      else 
+        let safeMoves = fst moves |> List.filter (fun x -> not(List.contains x notSafeMoves))
+        (safeMoves,(snd moves))
+    else board.getVacantNNeighbours this
+
 /// A board
 and Board () =
   let _array = Collections.Array2D.create<chessPiece option> 8 8 None
@@ -96,7 +111,7 @@ and Board () =
         let vacantPieceLists = List.map convertNWrap piece.candidateRelativeMoves
         // Extract and merge lists of vacant squares
         let vacant = List.collect fst vacantPieceLists
-  // Extract and merge lists of first obstruction pieces and filter out own pieces
+        // Extract and merge lists of first obstruction pieces and filter out own pieces
         let opponent =
           vacantPieceLists
           |> List.choose snd

@@ -8,15 +8,16 @@ type king (col:Color) =
   override this.candidateRelativeMoves =
     [[(-1,0)];[(-1,1)];[(0,1)];[(1,1)];
     [(1,0)];[(1,-1)];[(0,-1)];[(-1,-1)]]
-  /// A rook is a chessPiece which moves horizontally and vertically
+  
+/// A rook is a chessPiece which moves horizontally and vertically
 type rook (col:Color) =
   inherit chessPiece (col)
   // A rook can move horizontally and vertically
   // Make a list of relative coordinate lists. We consider the
   // current position and try all combinations of relative moves
   // (1 ,0) ; (2 ,0) ... (7 ,0) ; ( -1 ,0) ; ( -2 ,0) ; ...; (0 , -7).
-  // Some will be out of board, but will be assumed removed as illegal moves.
-  // A list of functions for relative moves
+  // Some will be out of board, but will be assumed removed as illegal 
+  // moves. A list of functions for relative moves
   let indToRel = [
     fun elm -> (elm, 0) ;  // South by elm
     fun elm -> (-elm, 0) ; // North by elm
