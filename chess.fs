@@ -33,10 +33,16 @@ type chessPiece ( color : Color ) =
             if p.Value.nameOfType.ToLower() = "rook" then
               notSafeMoves <- List.append notSafeMoves [for i in 0..7 -> (fst p.Value.position.Value, i)]
               notSafeMoves <- List.append notSafeMoves [for i in 0..7 -> (i, snd p.Value.position.Value)]
-      if (notSafeMoves.IsEmpty) then board.getVacantNNeighbours this
+            elif p.Value.nameOfType.ToLower() = "king" then
+              for i in -1..1 do 
+                for j in -1..1 do
+                  notSafeMoves <- List.append notSafeMoves [((fst p.Value.position.Value)+i, (snd p.Value.position.Value)+j)]       
+      if (notSafeMoves.IsEmpty) then 
+        board.getVacantNNeighbours this
       else 
         let safeMoves = fst moves |> List.filter (fun x -> not(List.contains x notSafeMoves))
         (safeMoves,(snd moves))
+    
     else board.getVacantNNeighbours this
 
 /// A board
