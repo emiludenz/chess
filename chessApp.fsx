@@ -16,13 +16,16 @@ board.[1 ,1] <- Some pieces.[1]
 board.[4 ,1] <- Some pieces.[2]
 
 
-printfn "%A" board
-//pieces.[2].getSafeMove()
+let p1 = Chess.Human(White)
+let p2 = Chess.Human(Black)
+let game = Chess.Game (p1,p2)
 
-Array.iter ( printPiece board ) pieces
-
+game.run(board)
 
 (*
+printfn "%A" board
+Array.iter ( printPiece board ) pieces
+
 // Make moves
 
 board.move (1 ,1) (3 ,1) // Moves a piece from (1 ,1) to (3 ,1)

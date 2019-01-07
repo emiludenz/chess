@@ -165,20 +165,21 @@ type Human (c: Color) =
           s
         else "wrong"
       else "wrong"
+    else "wrong" ///MOCKUP
 
-    else
-      "wrong" ///MOCKUP
-
-and Game (player1 : Player, player2: Player) =
+type Game (player1 : Player, player2: Player) =
+  member this.p1 = player1
+  member this.p2 = player2  
   member this.run (b: Board) = 
     let board = b
-    let mutable cPlayer = player1
+    let mutable cPlayer = this.p1
     let mutable codeString = " "
     let mutable turn = 1
+    printfn "%A" board
     while (codeString <> "quit") do
       if (turn%2=0) then 
-        cPlayer <- player2
-      else cPlayer <- player1
+        cPlayer <- this.p2
+      else cPlayer <- this.p1
       printfn "%A's move?" cPlayer
       let mutable a = System.Console.ReadLine()
       if (cPlayer.nextMove a board) = "quit" then
