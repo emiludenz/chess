@@ -22,7 +22,7 @@ printfn "%A" board
 Array.iter ( printPiece board ) pieces
 
 
-
+(*
 // Make moves
 
 board.move (1 ,1) (3 ,1) // Moves a piece from (1 ,1) to (3 ,1)
@@ -31,3 +31,4 @@ Array.iter ( printPiece board ) pieces
 board.move (0 ,0) (5 ,2)
 printfn "%A" board
 Array.iter ( printPiece board ) pieces
+*)
