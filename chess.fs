@@ -1,7 +1,7 @@
 module Chess
+open System.Text.RegularExpressions
 type Color = White | Black
 type Position = int * int
-
 /// An abstract chess piece
 [<AbstractClass>]
 type chessPiece ( color : Color ) =
@@ -127,3 +127,70 @@ and Board () =
           vacantPieceLists
           |> List.choose snd
         (vacant, opponent)
+let checkInput (s: string) : (Position * Position)  = 
+  let str = s.ToLower()
+  let p = str.Split ' '
+  let r = Regex.Match(str, @"[a-h][1-8]\s[a-h][1-8]")
+  if str = "quit" then
+    (-1,-1), (-1,-1) ///quitting sequence
+  else
+    if r.Success then
+      ///example: converting "a4 a5" to ((0,4),(0,5))
+      ((int(p.[0].[0])-97, (int(p.[0].[1]))-49), (int(p.[1].[0])-97 ,(int(p.[1].[1]))-49))
+    else
+      (100, 100), (100, 100) ///MOCKUP
+
+[<AbstractClass>]
+type Player (c: Color) =
+  member this.color = c
+  abstract member nextMove : string -> Board -> string 
+
+type Human (c: Color) =
+  inherit Player(c)
+  override this.nextMove (s:string) (board:Board): string =
+    ///input is converted using aux function checkInput, ex. from "a4 a5" to "(0,4),(0,5)"
+    let check = checkInput s
+    let source = fst (check)
+    let target = snd (check)
+    let mutable (p: chessPiece option) = board.Item(fst source, snd source)
+    ///getting available moves for that specific piece.
+    let moveList = fst (p.Value.availableMoves(board))
+    if check = ((-1,-1), (-1,-1)) then ///quitting sequence string to be used in the game class
+      "quit"  
+    elif check = ((100, 100), (100, 100)) then ///wrong input sequence to be used in the game class
+      "wrong"
+    elif (p.IsSome) then
+      if (p.Value.color = this.color) then
+        if (List.contains target moveList) then 
+          s
+        else "wrong"
+      else "wrong"
+
+    else
+      "wrong" ///MOCKUP
+
+and Game (player1 : Player, player2: Player) =
+  member this.run (b: Board) = 
+    let board = b
+    let mutable cPlayer = player1
+    let mutable codeString = " "
+    let mutable turn = 1
+    while (codeString <> "quit") do
+      if (turn%2=0) then 
+        cPlayer <- player2
+      else cPlayer <- player1
+      printfn "%A's move?" cPlayer
+      let mutable a = System.Console.ReadLine()
+      if (cPlayer.nextMove a board) = "quit" then
+        codeString <- "quit"
+        printfn "Game over, GG."
+      elif (cPlayer.nextMove a board) = "wrong" then
+        printfn "Try again!"
+      else
+        codeString <- (cPlayer.nextMove a board)
+        turn <- turn + 1
+        board.move (fst (checkInput codeString)) (snd (checkInput codeString))
+        printfn "%A" board
+      
+
+
