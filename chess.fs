@@ -195,10 +195,10 @@ type Game (player1 : Player, player2: Player) =
       let pos = checkInput codeString
 
       /// From here --- Needs fixing
-      if ( pos = ((-1,-1), (-1,-1)) ) then
+      if ( pos < ((0,0), (0,0)) ) then
         codeString <- "quit"
         printfn "Game over, GG."
-      elif (pos = ((100, 100), (100, 100))) then
+      elif (pos > ((7,7), (7, 7))) then
         printfn "Try again!"
       else
         codeString <- "wrong"
