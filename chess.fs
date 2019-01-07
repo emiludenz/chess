@@ -2,6 +2,7 @@ module Chess
 open System.Text.RegularExpressions
 type Color = White | Black
 type Position = int * int
+
 /// An abstract chess piece
 [<AbstractClass>]
 type chessPiece ( color : Color ) =
@@ -17,7 +18,7 @@ type chessPiece ( color : Color ) =
       | Black -> ( string this.nameOfType.[0]).ToLower ()
   /// A list of runs, which is a list of relative movements ,e.g.,
   /// [[(1 ,0);(2,0);...];[(-1 ,0);(-2 ,0)]...]. Runs must be
-  /// ordered such that the first in a list is closest to the piece 
+  /// ordered such that the first in a list is closest to the piece
   /// at hand.
   abstract member candidateRelativeMoves : Position list list
   /// Available moves and neighbours ([(1 ,0);(2 ,0);...],[p1;p2])
@@ -30,24 +31,24 @@ type chessPiece ( color : Color ) =
           let mutable (p:chessPiece option) = board.Item(i,j)
           if p.IsSome && this.color <> p.Value.color then
             if p.Value.nameOfType.ToLower() = "rook" then
-              notSafeMoves <- 
+              notSafeMoves <-
                 List.append notSafeMoves [for i in 0..7 -> (fst p.Value.position.Value, i)]
-              notSafeMoves <- 
+              notSafeMoves <-
                 List.append notSafeMoves [for i in 0..7 -> (i, snd p.Value.position.Value)]
-      
+
             elif p.Value.nameOfType.ToLower() = "king" then
-              for i in -1..1 do 
+              for i in -1..1 do
                 for j in -1..1 do
-                  notSafeMoves <- 
-                    List.append notSafeMoves [((fst p.Value.position.Value)+i, 
-                                               (snd p.Value.position.Value)+j)]       
-      
-      if (notSafeMoves.IsEmpty) then 
+                  notSafeMoves <-
+                    List.append notSafeMoves [((fst p.Value.position.Value)+i,
+                                               (snd p.Value.position.Value)+j)]
+
+      if (notSafeMoves.IsEmpty) then
         board.getVacantNNeighbours this
-      
-      else 
+
+      else
         let safeMoves = fst moves |> List.filter (fun x -> not(List.contains x notSafeMoves))
-        (safeMoves,(snd moves)) 
+        (safeMoves,(snd moves))
     else moves
 
 /// A board
@@ -62,7 +63,7 @@ and Board () =
     /// out - of - board coordinates .
   let relativeToAbsolute (pos:Position) (lst:Position list) : Position list =
     let addPair (a:int,b:int) (c:int,d:int) : Position = (a+c, b+d)
-    // Add origin and delta positions and Choose absolute positions 
+    // Add origin and delta positions and Choose absolute positions
     // that are on the board
     List.map (addPair pos) lst |> List.choose validPositionWrap
   /// Board is indexed using.[ ,] notation
@@ -75,10 +76,10 @@ and Board () =
   override this.ToString() =
     let letters = [for i in 1..8 -> char(96+i)]
     let rec boardStr (i : int) (j : int) : string =
-      match (i,j) with 
+      match (i,j) with
         (8,0) -> ""
         | _ ->
-          let stripOption (p : chessPiece option) : string = 
+          let stripOption (p : chessPiece option) : string =
             match p with
               None -> ""
               | Some p -> p.ToString()
@@ -86,14 +87,14 @@ and Board () =
           let pieceStr = stripOption _array.[7-i,j]
           //let pieceStr = sprintf "(%d, %d)" i j
           let lineSep = " " + String.replicate (8*4-1) "-"
-          match (i,j) with 
-          (0,0) -> 
+          match (i,j) with
+          (0,0) ->
             let str = sprintf "%s\n| %1s " lineSep pieceStr
             str + boardStr 0 1
-          | (i,7) -> 
+          | (i,7) ->
             let str = sprintf "| %1s |%c\n%s\n" pieceStr letters.[(abs(i-7))] lineSep // just to make it easy to debug (abs(i-7))
-            str + boardStr (i+1) 0 
-          | (i,j) -> 
+            str + boardStr (i+1) 0
+          | (i,j) ->
             let str = sprintf "| %1s " pieceStr
             str + boardStr i (j+1)
     boardStr 0 0
@@ -129,8 +130,7 @@ and Board () =
           |> List.choose snd
         (vacant, opponent)
 
-
-let checkInput (s: string) : (Position * Position)  = 
+let checkInput (s: string) : (Position * Position)  =
   let str = s.ToLower()
   let p = str.Split ' '
   let r = Regex.Match(str, @"[a-h][1-8]\s[a-h][1-8]")
@@ -147,7 +147,7 @@ let checkInput (s: string) : (Position * Position)  =
 type Player (c: Color) =
   member this.color = c
   abstract member nameOfType : string
-  abstract member nextMove : string -> Board -> string 
+  abstract member nextMove : string -> Board -> string
 
 type Human (c: Color) =
   inherit Player(c)
@@ -161,22 +161,22 @@ type Human (c: Color) =
     ///getting available moves for that specific piece.
     let moveList = fst (p.Value.availableMoves(board))
     if check = ((-1,-1), (-1,-1)) then ///quitting sequence string to be used in the game class
-      "quit"  
+      "quit"
     elif check = ((100, 100), (100, 100)) then ///wrong input sequence to be used in the game class
       "wrong"
-    elif (p.IsSome) && (p.Value.color = this.color) && (List.contains target moveList) then 
+    elif (p.IsSome) && (p.Value.color = this.color) && (List.contains target moveList) then
           s
     else "wrong" ///MOCKUP
 
 type Game (player1 : Player, player2: Player) =
   member this.p1 = player1
-  member this.p2 = player2  
-  member this.run (b: Board) = 
+  member this.p2 = player2
+  member this.run (b: Board) =
     let board = b
     let mutable cPlayer = this.p1
     let mutable codeString = ""
     let mutable turn = 1
-    let makeNums() = 
+    let makeNums() =
       for i in 1..8 do
         printf "| %d " i
         if i = 8 then printfn "|"
@@ -185,7 +185,7 @@ type Game (player1 : Player, player2: Player) =
 
     while (codeString <> "quit") do
 
-      if (turn % 2 = 0) then 
+      if (turn % 2 = 0) then
         cPlayer <- this.p2
       else cPlayer <- this.p1
 
