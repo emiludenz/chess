@@ -73,6 +73,7 @@ and Board () =
       _array.[a, b] <- p
   /// Produce string of board for, e.g., the printfn function.
   override this.ToString() =
+    let letters = [for i in 1..8 -> char(96+i)]
     let rec boardStr (i : int) (j : int) : string =
       match (i,j) with 
         (8,0) -> ""
@@ -90,7 +91,7 @@ and Board () =
             let str = sprintf "%s\n| %1s " lineSep pieceStr
             str + boardStr 0 1
           | (i,7) -> 
-            let str = sprintf "| %1s |%d\n%s\n" pieceStr (abs(i-7)) lineSep // just to make it easy to debug (abs(i-7))
+            let str = sprintf "| %1s |%c\n%s\n" pieceStr letters.[(abs(i-7))] lineSep // just to make it easy to debug (abs(i-7))
             str + boardStr (i+1) 0 
           | (i,j) -> 
             let str = sprintf "| %1s " pieceStr
@@ -127,6 +128,8 @@ and Board () =
           vacantPieceLists
           |> List.choose snd
         (vacant, opponent)
+
+
 let checkInput (s: string) : (Position * Position)  = 
   let str = s.ToLower()
   let p = str.Split ' '
@@ -143,10 +146,12 @@ let checkInput (s: string) : (Position * Position)  =
 [<AbstractClass>]
 type Player (c: Color) =
   member this.color = c
+  abstract member nameOfType : string
   abstract member nextMove : string -> Board -> string 
 
 type Human (c: Color) =
   inherit Player(c)
+  override this.nameOfType = string(this.color)
   override this.nextMove (s:string) (board:Board): string =
     ///input is converted using aux function checkInput, ex. from "a4 a5" to "(0,4),(0,5)"
     let check = checkInput s
@@ -159,12 +164,8 @@ type Human (c: Color) =
       "quit"  
     elif check = ((100, 100), (100, 100)) then ///wrong input sequence to be used in the game class
       "wrong"
-    elif (p.IsSome) then
-      if (p.Value.color = this.color) then
-        if (List.contains target moveList) then 
+    elif (p.IsSome) && (p.Value.color = this.color) && (List.contains target moveList) then 
           s
-        else "wrong"
-      else "wrong"
     else "wrong" ///MOCKUP
 
 type Game (player1 : Player, player2: Player) =
@@ -173,25 +174,36 @@ type Game (player1 : Player, player2: Player) =
   member this.run (b: Board) = 
     let board = b
     let mutable cPlayer = this.p1
-    let mutable codeString = " "
+    let mutable codeString = ""
     let mutable turn = 1
+    let makeNums() = 
+      for i in 1..8 do
+        printf "| %d " i
+        if i = 8 then printfn "|"
+    makeNums()
     printfn "%A" board
+
     while (codeString <> "quit") do
-      if (turn%2=0) then 
+
+      if (turn % 2 = 0) then 
         cPlayer <- this.p2
       else cPlayer <- this.p1
-      printfn "%A's move?" cPlayer
-      let mutable a = System.Console.ReadLine()
-      if (cPlayer.nextMove a board) = "quit" then
+
+      printfn "%s's move?" cPlayer.nameOfType
+
+      codeString <- System.Console.ReadLine()
+      let pos = checkInput codeString
+
+      /// From here --- Needs fixing
+      if ( pos = ((-1,-1), (-1,-1)) ) then
         codeString <- "quit"
         printfn "Game over, GG."
-      elif (cPlayer.nextMove a board) = "wrong" then
+      elif (pos = ((100, 100), (100, 100))) then
         printfn "Try again!"
       else
-        codeString <- (cPlayer.nextMove a board)
+        codeString <- "wrong"
         turn <- turn + 1
-        board.move (fst (checkInput codeString)) (snd (checkInput codeString))
+        board.move (fst pos) (snd pos)
+        makeNums()
         printfn "%A" board
-      
-
-
+      /// To here
