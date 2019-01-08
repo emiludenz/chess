@@ -10,12 +10,12 @@ let pieces = [|
   king ( White ) :> chessPiece ;
   rook ( White ) :> chessPiece ;
   king ( Black ) :> chessPiece ;
-  rook ( Black ) :> chessPiece |]
+  rook ( White ) :> chessPiece |]
 // Place pieces on the board
 board.[0 ,0] <- Some pieces.[0]
 board.[1 ,1] <- Some pieces.[1]
 board.[4 ,1] <- Some pieces.[2]
-board.[3 ,1] <- Some pieces.[3]
+board.[2 ,2] <- Some pieces.[3]
 
 (*
 /// Testing
