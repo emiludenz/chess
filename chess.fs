@@ -179,5 +179,6 @@ type Game (player1 : Player, player2: Player) =
         let startPos = ((int(check.[0])-97), (int(check.[1])-49))
         let endPos   = ((int(check.[3])-97), (int(check.[4])-49))
         board.move (startPos) (endPos)
+        System.Console.Clear()
         makeNums()
         printfn "%A" board
