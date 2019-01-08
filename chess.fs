@@ -28,28 +28,61 @@ type chessPiece ( color : Color ) =
       let mutable notSafeMoves = []
       for i in 0..7 do
         for j in 0..7 do
+          notSafeMoves <- []
           let mutable (p:chessPiece option) = board.Item(i,j)
-          if p.IsSome && this.color <> p.Value.color then
+          if (p.IsSome) && (this.color <> p.Value.color) then
+            // Handling rooks
             if p.Value.nameOfType.ToLower() = "rook" then
               notSafeMoves <-
                 List.append notSafeMoves [for i in 0..7 -> (fst p.Value.position.Value, i)]
               notSafeMoves <-
                 List.append notSafeMoves [for i in 0..7 -> (i, snd p.Value.position.Value)]
-
+              (*
+              printfn "%A" (fst (p.Value.availableMoves board))
+              notSafeMoves <- (fst (p.Value.availableMoves board))
+              *)
+              
+            // Handling kings
             elif p.Value.nameOfType.ToLower() = "king" then
               for i in -1..1 do
                 for j in -1..1 do
-                  notSafeMoves <-
-                    List.append notSafeMoves [((fst p.Value.position.Value)+i,
-                                               (snd p.Value.position.Value)+j)]
+                  if ((fst p.Value.position.Value)+i) >= 0 && ((snd p.Value.position.Value)+j) >= 0 then
+                    notSafeMoves <-
+                      List.append notSafeMoves [((fst p.Value.position.Value)+i,
+                                                 (snd p.Value.position.Value)+j)]
+          /// removing blocked spaces
+          let mutable blocked = [] 
+          for m in notSafeMoves do
+            p <- board.Item(fst m, snd m)
+            if (p.IsSome) then
+              if ((p.Value.color <> this.color) && (p.Value.nameOfType <> "king")) then
+                if (((fst p.Value.position.Value), (snd p.Value.position.Value)) < m) then
+                  blocked <- notSafeMoves |> List.filter(fun c ->
+                   ((fst p.Value.position.Value), (snd p.Value.position.Value)) < c) 
+                elif (((fst p.Value.position.Value), (snd p.Value.position.Value)) > m) then
+                  blocked <- notSafeMoves |> List.filter(fun c ->
+                  ((fst p.Value.position.Value), (snd p.Value.position.Value)) > c) 
+          if not(blocked.IsEmpty) then
+            notSafeMoves <- blocked
+
+
 
       if (notSafeMoves.IsEmpty) then
         board.getVacantNNeighbours this
 
       else
-        let safeMoves = fst moves |> List.filter (fun x -> not(List.contains x notSafeMoves))
-        (safeMoves,(snd moves))
-    else moves
+        if not((snd moves).IsEmpty) then
+          //printfn "%A" (snd moves).[0].position.Value
+          let safeMoves = fst moves 
+                          |> List.filter (fun x -> not(List.contains x notSafeMoves))
+                          |> List.append [(snd moves).[0].position.Value] 
+          (safeMoves,(snd moves))
+        
+        else
+          let safeMoves = fst moves |> List.filter (fun x -> not(List.contains x notSafeMoves))
+          (safeMoves,(snd moves))
+        
+    else board.getVacantNNeighbours this
 
 /// A board
 and Board () =
@@ -127,46 +160,39 @@ and Board () =
         // Extract and merge lists of first obstruction pieces and filter out own pieces
         let opponent =
           vacantPieceLists
-          |> List.choose snd
+          |> List.choose snd |> List.filter (fun c -> c.color <> piece.color)
         (vacant, opponent)
-
-let checkInput (s: string) : (Position * Position)  =
-  let str = s.ToLower()
-  let p = str.Split ' '
-  let r = Regex.Match(str, @"[a-h][1-8]\s[a-h][1-8]")
-  if str = "quit" then
-    (-1,-1), (-1,-1) ///quitting sequence
-  else
-    if r.Success then
-      ///example: converting "a4 a5" to ((0,4),(0,5))
-      ((int(p.[0].[0])-97, (int(p.[0].[1]))-49), (int(p.[1].[0])-97 ,(int(p.[1].[1]))-49))
-    else
-      (100, 100), (100, 100) ///MOCKUP
 
 [<AbstractClass>]
 type Player (c: Color) =
   member this.color = c
   abstract member nameOfType : string
-  abstract member nextMove : string -> Board -> string
+  abstract member nextMove : Board -> string
 
 type Human (c: Color) =
   inherit Player(c)
   override this.nameOfType = string(this.color)
-  override this.nextMove (s:string) (board:Board): string =
-    ///input is converted using aux function checkInput, ex. from "a4 a5" to "(0,4),(0,5)"
-    let check = checkInput s
-    let source = fst (check)
-    let target = snd (check)
-    let mutable (p: chessPiece option) = board.Item(fst source, snd source)
-    ///getting available moves for that specific piece.
-    let moveList = fst (p.Value.availableMoves(board))
-    if check = ((-1,-1), (-1,-1)) then ///quitting sequence string to be used in the game class
-      "quit"
-    elif check = ((100, 100), (100, 100)) then ///wrong input sequence to be used in the game class
-      "wrong"
-    elif (p.IsSome) && (p.Value.color = this.color) && (List.contains target moveList) then
-          s
-    else "wrong" ///MOCKUP
+  override this.nextMove (b: Board): string =
+    /// Input is checked by the function checkInput
+    let mutable str = ""
+    let mutable isValid = false 
+    while not(isValid) do
+      printf "%s's turn " this.nameOfType 
+      str <- System.Console.ReadLine()
+      let (r:Match) = Regex.Match(str, @"[a-h][1-8]\s[a-h][1-8]")
+      ///quitting sequence
+      if (str = "quit") then
+        isValid <- true
+      elif (r.Success) then
+          let startPos = ((int(str.[0])-97), (int(str.[1])-49))
+          let endPos   = ((int(str.[3])-97), (int(str.[4])-49))
+          let (p: chessPiece option) = b.Item(fst startPos, snd startPos)
+          if (p.IsSome) then 
+            let moveList = fst (p.Value.availableMoves b) 
+            if (p.Value.color = this.color) && (List.contains endPos moveList) then
+              isValid <- true
+    str
+
 
 type Game (player1 : Player, player2: Player) =
   member this.p1 = player1
@@ -182,28 +208,19 @@ type Game (player1 : Player, player2: Player) =
         if i = 8 then printfn "|"
     makeNums()
     printfn "%A" board
-
     while (codeString <> "quit") do
-
       if (turn % 2 = 0) then
         cPlayer <- this.p2
       else cPlayer <- this.p1
 
-      printfn "%s's move?" cPlayer.nameOfType
-
-      codeString <- System.Console.ReadLine()
-      let pos = checkInput codeString
-
-      /// From here --- Needs fixing
-      if ( pos < ((0,0), (0,0)) ) then
+      let check = cPlayer.nextMove board
+      if ( check = "quit" ) then
         codeString <- "quit"
         printfn "Game over, GG."
-      elif (pos > ((7,7), (7, 7))) then
-        printfn "Try again!"
       else
-        codeString <- "wrong"
         turn <- turn + 1
-        board.move (fst pos) (snd pos)
+        let startPos = ((int(check.[0])-97), (int(check.[1])-49))
+        let endPos   = ((int(check.[3])-97), (int(check.[4])-49))
+        board.move (startPos) (endPos)
         makeNums()
         printfn "%A" board
-      /// To here

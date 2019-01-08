@@ -9,12 +9,33 @@ let board = Chess.Board () // Create a board
 let pieces = [|
   king ( White ) :> chessPiece ;
   rook ( White ) :> chessPiece ;
-  king ( Black ) :> chessPiece |]
+  king ( Black ) :> chessPiece ;
+  rook ( Black ) :> chessPiece |]
 // Place pieces on the board
 board.[0 ,0] <- Some pieces.[0]
 board.[1 ,1] <- Some pieces.[1]
 board.[4 ,1] <- Some pieces.[2]
+board.[3 ,1] <- Some pieces.[3]
 
+/// Testing 
+(*
+let makeNums() =
+      for i in 1..8 do
+        printf "| %d " i
+        if i = 8 then printfn "|"
+makeNums()
+printfn "%A" board
+Array.iter (printPiece board) pieces
+
+board.move (1,1) (3,1) 
+
+makeNums()
+printfn "%A" board
+Array.iter (printPiece board) pieces
+
+*)
+
+//Running the game
 let p1 = Chess.Human(White)
 let p2 = Chess.Human(Black)
 let game = Chess.Game (p1,p2)
