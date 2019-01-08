@@ -134,20 +134,36 @@ type Human (c: Color) =
     let mutable isValid = false
     while not(isValid) do
       printf "%s's turn " this.nameOfType
-      str <- System.Console.ReadLine()
-      let (r:Match) = Regex.Match(str, @"[a-h][1-8]\s[a-h][1-8]")
-      ///quitting sequence
-      if (str = "quit") then
-        isValid <- true
-      elif (r.Success) then
-        let startPos = ((int(str.[0])-97), (int(str.[1])-49))
-        let endPos = ((int(str.[3])-97), (int(str.[4])-49))
-        let (p: chessPiece option) = b.Item(fst startPos, snd startPos)
-        if ((p.IsSome) && endPos < (8,8) && endPos > (-1,-1)) then
+      let mutable (p: chessPiece option) = b.Item(0,0)
+      for i in 0..7 do
+        for j in 0..7 do
+          p <- b.Item(i,j)
+          if (p.IsSome) then
+            if ((p.Value.nameOfType = "king") && (p.Value.color = this.color)) then
+              let m = List.append (fst (p.Value.availableMoves b)) [for e in (snd (p.Value.availableMoves b)) -> e.position.Value]
+              if (m.IsEmpty) then 
+                printfn "Checkmate %A!" this.nameOfType
+                str <- "quit"
+                isValid <- true
+      /// If not checkmate prompt user for input
+      if not(isValid) then
+        str <- System.Console.ReadLine()
+        let (r:Match) = Regex.Match(str, @"[a-h][1-8]\s[a-h][1-8]")
+        ///quitting sequence if no moves available for the king
+        if (str = "quit") then
+          isValid <- true
+        elif (r.Success) then
+          let startPos = ((int(str.[0])-97), (int(str.[1])-49))
+          let endPos = ((int(str.[3])-97), (int(str.[4])-49))
+          p <- b.Item(fst startPos, snd startPos)
           let neigh = [for e in (snd (p.Value.availableMoves b)) -> e.position.Value]
           let moveList = List.append (fst (p.Value.availableMoves b)) neigh
-          if ((p.Value.color = this.color)) && ((List.contains endPos moveList)) then
-            isValid <- true
+          if ((p.IsSome) && endPos < (8,8) && endPos > (-1,-1)) then
+            if ((p.Value.color = this.color)) && ((List.contains endPos moveList)) then
+              isValid <- true
+            elif (not(moveList.IsEmpty)) then
+              str <- "quit"
+              isValid <- true
     str
 
 
