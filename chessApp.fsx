@@ -18,7 +18,7 @@ board.[4 ,1] <- Some pieces.[2]
 board.[3 ,1] <- Some pieces.[3]
 
 (*
-/// Testing 
+/// Testing
 let makeNums() =
       for i in 1..8 do
         printf "| %d " i
@@ -27,7 +27,7 @@ makeNums()
 printfn "%A" board
 Array.iter (printPiece board) pieces
 
-board.move (1,1) (3,1) 
+board.move (1,1) (3,1)
 
 makeNums()
 printfn "%A" board

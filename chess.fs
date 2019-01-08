@@ -131,9 +131,9 @@ type Human (c: Color) =
   override this.nextMove (b: Board): string =
     /// Input is checked by the function checkInput
     let mutable str = ""
-    let mutable isValid = false 
+    let mutable isValid = false
     while not(isValid) do
-      printf "%s's turn " this.nameOfType 
+      printf "%s's turn " this.nameOfType
       str <- System.Console.ReadLine()
       let (r:Match) = Regex.Match(str, @"[a-h][1-8]\s[a-h][1-8]")
       ///quitting sequence
@@ -143,9 +143,9 @@ type Human (c: Color) =
         let startPos = ((int(str.[0])-97), (int(str.[1])-49))
         let endPos = ((int(str.[3])-97), (int(str.[4])-49))
         let (p: chessPiece option) = b.Item(fst startPos, snd startPos)
-        if (p.IsSome) then 
-          let neigh = [for e in (snd (p.Value.availableMoves b)) -> e.position.Value] 
-          let mutable moveList = List.append (fst (p.Value.availableMoves b)) neigh
+        if ((p.IsSome) && endPos < (8,8) && endPos > (-1,-1)) then
+          let neigh = [for e in (snd (p.Value.availableMoves b)) -> e.position.Value]
+          let moveList = List.append (fst (p.Value.availableMoves b)) neigh
           if ((p.Value.color = this.color)) && ((List.contains endPos moveList)) then
             isValid <- true
     str
