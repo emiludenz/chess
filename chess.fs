@@ -24,64 +24,20 @@ type chessPiece ( color : Color ) =
   /// Available moves and neighbours ([(1 ,0);(2 ,0);...],[p1;p2])
   member this.availableMoves (board:Board) : (Position list * chessPiece list) =
     let moves = board.getVacantNNeighbours this   // First part of the assignment
-    if this.nameOfType.ToLower() = "king" then
-      let mutable notSafeMoves = []
+    let mutable notSafeMoves = []
+    let mutable (p:chessPiece option) = board.Item(0,0)
+    if (this.nameOfType = "king") then
+      let king = this
+      board.[(fst king.position.Value),( snd king.position.Value)] <- None
       for i in 0..7 do
         for j in 0..7 do
-          notSafeMoves <- []
-          let mutable (p:chessPiece option) = board.Item(i,j)
-          if (p.IsSome) && (this.color <> p.Value.color) then
-            // Handling rooks
-            if p.Value.nameOfType.ToLower() = "rook" then
-              notSafeMoves <-
-                List.append notSafeMoves [for i in 0..7 -> (fst p.Value.position.Value, i)]
-              notSafeMoves <-
-                List.append notSafeMoves [for i in 0..7 -> (i, snd p.Value.position.Value)]
-              (*
-              printfn "%A" (fst (p.Value.availableMoves board))
-              notSafeMoves <- (fst (p.Value.availableMoves board))
-              *)
-              
-            // Handling kings
-            elif p.Value.nameOfType.ToLower() = "king" then
-              for i in -1..1 do
-                for j in -1..1 do
-                  if ((fst p.Value.position.Value)+i) >= 0 && ((snd p.Value.position.Value)+j) >= 0 then
-                    notSafeMoves <-
-                      List.append notSafeMoves [((fst p.Value.position.Value)+i,
-                                                 (snd p.Value.position.Value)+j)]
-          /// removing blocked spaces
-          let mutable blocked = [] 
-          for m in notSafeMoves do
-            p <- board.Item(fst m, snd m)
-            if (p.IsSome) then
-              if ((p.Value.color <> this.color) && (p.Value.nameOfType <> "king")) then
-                if (((fst p.Value.position.Value), (snd p.Value.position.Value)) < m) then
-                  blocked <- notSafeMoves |> List.filter(fun c ->
-                   ((fst p.Value.position.Value), (snd p.Value.position.Value)) < c) 
-                elif (((fst p.Value.position.Value), (snd p.Value.position.Value)) > m) then
-                  blocked <- notSafeMoves |> List.filter(fun c ->
-                  ((fst p.Value.position.Value), (snd p.Value.position.Value)) > c) 
-          if not(blocked.IsEmpty) then
-            notSafeMoves <- blocked
+          p <- board.Item(i,j)
+          if ((p.IsSome) && (this.color <> p.Value.color)) then
+              notSafeMoves <- List.append notSafeMoves (fst (board.getVacantNNeighbours p.Value))
+      let safeMoves = fst moves |> List.filter (fun x -> not(List.contains x notSafeMoves))
+      board.[(fst king.position.Value),( snd king.position.Value)] <- Some king
+      (safeMoves,(snd moves))
 
-
-
-      if (notSafeMoves.IsEmpty) then
-        board.getVacantNNeighbours this
-
-      else
-        if not((snd moves).IsEmpty) then
-          //printfn "%A" (snd moves).[0].position.Value
-          let safeMoves = fst moves 
-                          |> List.filter (fun x -> not(List.contains x notSafeMoves))
-                          |> List.append [(snd moves).[0].position.Value] 
-          (safeMoves,(snd moves))
-        
-        else
-          let safeMoves = fst moves |> List.filter (fun x -> not(List.contains x notSafeMoves))
-          (safeMoves,(snd moves))
-        
     else board.getVacantNNeighbours this
 
 /// A board
@@ -184,13 +140,14 @@ type Human (c: Color) =
       if (str = "quit") then
         isValid <- true
       elif (r.Success) then
-          let startPos = ((int(str.[0])-97), (int(str.[1])-49))
-          let endPos   = ((int(str.[3])-97), (int(str.[4])-49))
-          let (p: chessPiece option) = b.Item(fst startPos, snd startPos)
-          if (p.IsSome) then 
-            let moveList = fst (p.Value.availableMoves b) 
-            if (p.Value.color = this.color) && (List.contains endPos moveList) then
-              isValid <- true
+        let startPos = ((int(str.[0])-97), (int(str.[1])-49))
+        let endPos = ((int(str.[3])-97), (int(str.[4])-49))
+        let (p: chessPiece option) = b.Item(fst startPos, snd startPos)
+        if (p.IsSome) then 
+          let neigh = [for e in (snd (p.Value.availableMoves b)) -> e.position.Value] 
+          let mutable moveList = List.append (fst (p.Value.availableMoves b)) neigh
+          if ((p.Value.color = this.color)) && ((List.contains endPos moveList)) then
+            isValid <- true
     str
 
 

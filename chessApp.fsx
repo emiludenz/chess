@@ -17,8 +17,8 @@ board.[1 ,1] <- Some pieces.[1]
 board.[4 ,1] <- Some pieces.[2]
 board.[3 ,1] <- Some pieces.[3]
 
-/// Testing 
 (*
+/// Testing 
 let makeNums() =
       for i in 1..8 do
         printf "| %d " i
@@ -34,8 +34,8 @@ printfn "%A" board
 Array.iter (printPiece board) pieces
 
 *)
-
 //Running the game
+
 let p1 = Chess.Human(White)
 let p2 = Chess.Human(Black)
 let game = Chess.Game (p1,p2)
