@@ -152,8 +152,8 @@ type Human (c: Color) =
           let startPos = ((int(str.[0])-97), (int(str.[1])-49))
           let endPos = ((int(str.[3])-97), (int(str.[4])-49))
           p <- b.Item(fst startPos, snd startPos)
-          let moveList = List.append (fst (p.Value.availableMoves b)) [for e in (snd (p.Value.availableMoves b)) -> e.position.Value]
-          if ((p.IsSome) && endPos < (8,8) && endPos > (-1,-1)) then
+          if ((p.IsSome) && (endPos < (8,8)) && (endPos > (-1,-1))) then
+            let moveList = List.append (fst (p.Value.availableMoves b)) [for e in (snd (p.Value.availableMoves b)) -> e.position.Value]
             if ((p.Value.color = this.color)) && ((List.contains endPos moveList)) then
               isValid <- true
             elif (moveList.IsEmpty) then
