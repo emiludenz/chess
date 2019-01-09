@@ -17,6 +17,12 @@ type chessPiece ( color : Color ) =
       White -> ( string this.nameOfType.[0]).ToUpper ()
       | Black -> ( string this.nameOfType.[0]).ToLower ()
   abstract member candidateRelativeMoves : Position list list
+
+  ///<summary>The member availableMoves returns a chessPiece available moves
+  /// and opponent pieces that can be attacked </summary>
+  ///<param name="board"> A Board type is provided as parameter</param>
+  ///<remarks>Will only work in this framework</remarks>
+  ///<returns>A tuple containg a list of position(s) and a list of chessPiece(s)</returns>
   member this.availableMoves (board:Board) : (Position list * chessPiece list) =
     let moves = board.getVacantNNeighbours this
     let mutable notSafeMoves = []
@@ -114,15 +120,34 @@ and Board () =
           |> List.choose snd |> List.filter (fun c -> c.color <> piece.color)
         (vacant, opponent)
 
+/// <summary>The player class is the abstract class, a player can either
+/// be a human player or the computer (not yet implemented)</summary>
+/// <param name="c">c is a Color type, either Black or White</param>
+/// <remarks>Don't try passing pink as an argument!</remarks>
+/// <returns>A player object with the given Color</returns>
 [<AbstractClass>]
 type Player (c: Color) =
   member this.color = c
   abstract member nameOfType : string
   abstract member nextMove : Board -> string
 
+/// <summary>The human class needs a human player to provide
+/// input to get the game going</summary>
+/// <param name="c">c is a Color, provided to instantiate the object</param>
+/// <remarks>Cannot handle any thing else, it is weak!</remarks>
+/// <returns>A Player.Human object</returns>
 type Human (c: Color) =
   inherit Player(c)
+  /// <summary>A simple override to get a string
+  ///  representation of the player</summary>
+  /// <returns>A string (white or black)</returns>
   override this.nameOfType = string(this.color)
+  /// <summary> The member nextMove returns the next move to the Game class
+  /// Passing the players move as a string </summary>
+  /// <param name="b">b is a Board object</param>
+  /// <remarks> Will not stop until a valid input is given
+  /// or the palyer is checkmate</remarks>
+  /// <returns> A string representing the move</returns>
   override this.nextMove (b: Board): string =
     let mutable str = ""
     let mutable isValid = false
@@ -161,10 +186,20 @@ type Human (c: Color) =
               isValid <- true
     str
 
-
+/// <summary>The Game class containts the logic of the game loop. Which
+///  player turn it is, what move to make and refreshing the screen</summary>
+/// <param name="player1">A player object (human or computer)</param>
+/// <param name="player2">A player object (human or computer)</param>
+/// <remarks>Computer is not implemented yet</remarks>
+/// <returns>An object that can be minipulated</returns>
 type Game (player1 : Player, player2: Player) =
   member this.p1 = player1
   member this.p2 = player2
+  /// <summary>The member run takes care of each loop, and ends the game
+  /// when checkmate or quit code is given</summary>
+  /// <param name="b">b is a Board</param>
+  /// <remarks>Does not need to be run through a loop, since it does so itself</remarks>
+  /// <returns>An unit</returns>
   member this.run (b: Board) =
     let board = b
     let mutable cPlayer = this.p1
