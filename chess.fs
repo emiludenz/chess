@@ -16,26 +16,21 @@ type chessPiece ( color : Color ) =
     match color with
       White -> ( string this.nameOfType.[0]).ToUpper ()
       | Black -> ( string this.nameOfType.[0]).ToLower ()
-  /// A list of runs, which is a list of relative movements ,e.g.,
-  /// [[(1 ,0);(2,0);...];[(-1 ,0);(-2 ,0)]...]. Runs must be
-  /// ordered such that the first in a list is closest to the piece
-  /// at hand.
   abstract member candidateRelativeMoves : Position list list
-  /// Available moves and neighbours ([(1 ,0);(2 ,0);...],[p1;p2])
   member this.availableMoves (board:Board) : (Position list * chessPiece list) =
-    let moves = board.getVacantNNeighbours this   // First part of the assignment
+    let moves = board.getVacantNNeighbours this
     let mutable notSafeMoves = []
     let mutable (p:chessPiece option) = board.Item(0,0)
     if (this.nameOfType = "king") then
       let king = this
-      board.[(fst king.position.Value),( snd king.position.Value)] <- None
+      board.[(fst king.position.Value),(snd king.position.Value)] <- None
       for i in 0..7 do
         for j in 0..7 do
           p <- board.Item(i,j)
           if ((p.IsSome) && (this.color <> p.Value.color)) then
               notSafeMoves <- List.append notSafeMoves (fst (board.getVacantNNeighbours p.Value))
       let safeMoves = fst moves |> List.filter (fun x -> not(List.contains x notSafeMoves))
-      board.[(fst king.position.Value),( snd king.position.Value)] <- Some king
+      board.[(fst king.position.Value), (snd king.position.Value)] <- Some king
       (safeMoves,(snd moves))
 
     else board.getVacantNNeighbours this
@@ -129,11 +124,10 @@ type Human (c: Color) =
   inherit Player(c)
   override this.nameOfType = string(this.color)
   override this.nextMove (b: Board): string =
-    /// Input is checked by the function checkInput
     let mutable str = ""
     let mutable isValid = false
+    /// Checking if the user is checkmate
     while not(isValid) do
-      printf "%s's turn " this.nameOfType
       let mutable (p: chessPiece option) = b.Item(0,0)
       for i in 0..7 do
         for j in 0..7 do
@@ -141,27 +135,28 @@ type Human (c: Color) =
           if (p.IsSome) then
             if ((p.Value.nameOfType = "king") && (p.Value.color = this.color)) then
               let m = List.append (fst (p.Value.availableMoves b)) [for e in (snd (p.Value.availableMoves b)) -> e.position.Value]
-              if (m.IsEmpty) then 
-                printfn "Checkmate %A!" this.nameOfType
+              if (m.IsEmpty) then
+                printfn "Checkmate %s!" this.nameOfType
                 str <- "quit"
                 isValid <- true
+
       /// If not checkmate prompt user for input
       if not(isValid) then
+        printf "%s's turn " this.nameOfType
         str <- System.Console.ReadLine()
         let (r:Match) = Regex.Match(str, @"[a-h][1-8]\s[a-h][1-8]")
-        ///quitting sequence if no moves available for the king
+        /// Quitting sequence if player wants to quit
         if (str = "quit") then
           isValid <- true
         elif (r.Success) then
           let startPos = ((int(str.[0])-97), (int(str.[1])-49))
           let endPos = ((int(str.[3])-97), (int(str.[4])-49))
           p <- b.Item(fst startPos, snd startPos)
-          let neigh = [for e in (snd (p.Value.availableMoves b)) -> e.position.Value]
-          let moveList = List.append (fst (p.Value.availableMoves b)) neigh
+          let moveList = List.append (fst (p.Value.availableMoves b)) [for e in (snd (p.Value.availableMoves b)) -> e.position.Value]
           if ((p.IsSome) && endPos < (8,8) && endPos > (-1,-1)) then
             if ((p.Value.color = this.color)) && ((List.contains endPos moveList)) then
               isValid <- true
-            elif (not(moveList.IsEmpty)) then
+            elif (moveList.IsEmpty) then
               str <- "quit"
               isValid <- true
     str
@@ -186,14 +181,14 @@ type Game (player1 : Player, player2: Player) =
         cPlayer <- this.p2
       else cPlayer <- this.p1
 
-      let check = cPlayer.nextMove board
-      if ( check = "quit" ) then
+      let move = cPlayer.nextMove board
+      if (move = "quit" ) then
         codeString <- "quit"
         printfn "Game over, GG."
       else
         turn <- turn + 1
-        let startPos = ((int(check.[0])-97), (int(check.[1])-49))
-        let endPos   = ((int(check.[3])-97), (int(check.[4])-49))
+        let startPos = ((int(move.[0])-97), (int(move.[1])-49))
+        let endPos   = ((int(move.[3])-97), (int(move.[4])-49))
         board.move (startPos) (endPos)
         System.Console.Clear()
         makeNums()
